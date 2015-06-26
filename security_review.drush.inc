@@ -5,7 +5,6 @@
  * Drush commands for Security Review module.
  */
 
-use Drupal\security_review\Check;
 use Drupal\security_review\Checklist;
 use Drupal\security_review\CheckResult;
 use Drupal\security_review\SecurityReview;
@@ -114,7 +113,6 @@ function security_review_drush() {
     // Remove checks that are being skipped if storing.
     if ($store) {
       foreach ($checks as $check) {
-        /** @var Check $check */
         if ($check->isSkipped()) {
           $skip[] = $check;
         }
@@ -138,7 +136,6 @@ function security_review_drush() {
   }
   else {
     foreach (Checklist::getChecks() as $check) {
-      /** @var Check $check */
       $last_result = $check->lastResult();
       if ($last_result instanceof CheckResult) {
         $results[] = $last_result;
@@ -170,7 +167,7 @@ function _security_review_drush_get_check($check_name) {
 /**
  * Helper function to print Security Review results using drush_log().
  *
- * @param array $results
+ * @param \Drupal\security_review\CheckResult[] $results
  *   An array of CheckResults.
  * @param boolean $short_titles
  *   Whether to use short message (check title) or full check success or failure
@@ -182,7 +179,6 @@ function _security_review_drush_get_check($check_name) {
  */
 function _security_review_drush_print_results(array $results, $short_titles = FALSE, $show_findings = FALSE) {
   foreach ($results as $result) {
-    /** @var CheckResult $result */
     if ($result instanceof CheckResult) {
       $check = $result->check();
       $message = $short_titles ? $check->getTitle() : $result->resultMessage();

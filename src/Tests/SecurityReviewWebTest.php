@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Tests;
 
-use Drupal\security_review\Check;
 use Drupal\security_review\Checklist;
 use Drupal\security_review\SecurityReview;
 use Drupal\simpletest\WebTestBase;
@@ -35,7 +34,7 @@ class SecurityReviewWebTest extends WebTestBase {
   /**
    * The security checks defined by Security Review.
    *
-   * @var array
+   * @var \Drupal\security_review\Check[]
    */
   protected $checks;
 
@@ -69,12 +68,10 @@ class SecurityReviewWebTest extends WebTestBase {
    */
   public function testRun() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $this->assertEqual(0, $check->lastRun(), $check->getTitle() . ' has not been run yet.');
     }
     SecurityReview::runChecklist();
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $this->assertNotEqual(0, $check->lastRun(), $check->getTitle() . ' has been run.');
     }
   }
@@ -84,12 +81,10 @@ class SecurityReviewWebTest extends WebTestBase {
    */
   public function testSkippedRun() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $check->skip();
     }
     SecurityReview::runChecklist();
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $this->assertEqual(0, $check->lastRun(), $check->getTitle() . ' has not been run.');
     }
   }

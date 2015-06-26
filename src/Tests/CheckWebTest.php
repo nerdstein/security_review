@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Tests;
 
-use Drupal\security_review\Check;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -26,7 +25,7 @@ class CheckWebTest extends WebTestBase {
   /**
    * The security checks defined by Security Review.
    *
-   * @var array
+   * @var \Drupal\security_review\Check[]
    */
   protected $checks;
 
@@ -64,7 +63,6 @@ class CheckWebTest extends WebTestBase {
    */
   public function testSkipCheck() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $check->skip();
 
       $isSkipped = $check->isSkipped();

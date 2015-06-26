@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Tests;
 
-use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
 use Drupal\simpletest\KernelTestBase;
 
@@ -27,7 +26,7 @@ class CheckTest extends KernelTestBase {
   /**
    * The security checks defined by Security Review.
    *
-   * @var array
+   * @var \Drupal\security_review\Check[]
    */
   protected $checks;
 
@@ -51,7 +50,6 @@ class CheckTest extends KernelTestBase {
    */
   public function testEnabledByDefault() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       $this->assertFalse($check->isSkipped(), $check->getTitle() . ' is enabled by default.');
     }
   }
@@ -62,7 +60,6 @@ class CheckTest extends KernelTestBase {
    */
   public function testStoreResult() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       // Run the check and store its result.
       $result = $check->run();
       $check->storeResult($result);
@@ -85,7 +82,6 @@ class CheckTest extends KernelTestBase {
    */
   public function testLastResultUpdate() {
     foreach ($this->checks as $check) {
-      /** @var Check $check */
       if (!$check->storesFindings()) {
         // Get the real result.
         $result = $check->run();

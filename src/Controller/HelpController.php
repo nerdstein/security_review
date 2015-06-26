@@ -9,7 +9,6 @@ namespace Drupal\security_review\Controller;
 
 use Drupal;
 use Drupal\Core\Url;
-use Drupal\security_review\Check;
 use Drupal\security_review\Checklist;
 use Drupal\security_review\CheckResult;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -62,8 +61,6 @@ class HelpController {
 
     $checks = array();
     foreach (Checklist::getChecks() as $check) {
-      /** @var Check $check */
-
       // Get the namespace array's reference.
       $check_namespace = &$checks[$check->getMachineNamespace()];
 
