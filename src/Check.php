@@ -197,13 +197,21 @@ abstract class Check {
    * Returns the last stored result of the check or null if no results have been
    * stored yet.
    *
+   * @param bool $getFindings
+   *   Whether to get the findings too.
+   *
    * @return \Drupal\security_review\CheckResult|null
    *   The last stored result (or null).
    */
-  public function lastResult() {
+  public function lastResult($getFindings = FALSE) {
     $statePrefix = $this->statePrefix . 'last_result.';
     $result = Drupal::state()->get($statePrefix . 'result');
-    $findings = Drupal::state()->get($statePrefix . 'findings');
+    if($getFindings) {
+      $findings = Drupal::state()->get($statePrefix . 'findings');
+    }
+    else {
+      $findings = array();
+    }
     $time = Drupal::state()->get($statePrefix . 'time');
 
     $validResult = is_int($result)
@@ -218,10 +226,7 @@ abstract class Check {
 
     $lastResult = new CheckResult($this, $result, $findings, $time);
 
-    if ($this->storesFindings()) {
-      return $lastResult;
-    }
-    else {
+    if ($getFindings && !$this->storesFindings()) {
       // Run the check to get the findings.
       $freshResult = $this->run();
 
@@ -238,9 +243,11 @@ abstract class Check {
       }
       else {
         // Else return the old result with the fresh one's findings.
-        return CheckResult::combine($lastResult, $this->run());
+        return CheckResult::combine($lastResult, $freshResult);
       }
     }
+
+    return $lastResult;
   }
 
   /**
