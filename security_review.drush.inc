@@ -149,7 +149,7 @@ function security_review_drush() {
 /**
  * Helper function for parsing input check name strings.
  *
- * @param $check_name
+ * @param string $check_name
  *   The check to get.
  *
  * @return \Drupal\security_review\Check|null
