@@ -242,4 +242,43 @@ class SecurityReview {
     }
   }
 
+  /**
+   * Stores information about the server into the State system.
+   */
+  public static function setServerData() {
+    if (!static::isServerPosix() || PHP_SAPI === 'cli') {
+      return;
+    }
+    // Determine web server's uid and groups.
+    $uid = posix_getuid();
+    $groups = posix_getgroups();
+
+    Drupal::state()->set('security_review.server.uid', $uid);
+    Drupal::state()->set('security_review.server.groups', $groups);
+  }
+
+  /**
+   * @return bool
+   *   Whether the web server is POSIX based.
+   */
+  public static function isServerPosix() {
+    return function_exists('posix_getuid');
+  }
+
+  /**
+   * @return int
+   *   UID of the web server's user.
+   */
+  public static function getServerUID() {
+    return Drupal::state()->get('security_review.server.uid');
+  }
+
+  /**
+   * @return int[]
+   *   GIDs of the web server's user.
+   */
+  public static function getServerGIDs() {
+    return Drupal::state()->get('security_review.server.groups');
+  }
+
 }

@@ -8,11 +8,13 @@
 namespace Drupal\security_review\Checks;
 
 use Drupal;
-use Drupal\Core\Url;
-use Drupal\Core\StreamWrapper\PublicStream;
 use Drupal\Core\StreamWrapper\PrivateStream;
+use Drupal\Core\StreamWrapper\PublicStream;
+use Drupal\Core\Url;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
+use Drupal\security_review\Security;
+use Drupal\security_review\SecurityReview;
 
 /**
  * Check that files aren't writeable by the server.
@@ -50,93 +52,54 @@ class FilePermissions extends Check {
   /**
    * {@inheritdoc}
    */
-  public function run() {
+  public function run($CLI = FALSE) {
     $result = CheckResult::SUCCESS;
 
-    $file_path = PublicStream::basePath();
-    $ignore = array('..', 'CVS', '.git', '.svn', '.bzr', realpath($file_path));
-
-    // Add temporary files directory if it's set.
-    $temp_path = file_directory_temp();
-    if (!empty($temp_path)) {
-      $ignore[] = realpath('./' . rtrim($temp_path, '/'));
-    }
-
-    // Add private files directory if it's set.
-    $private_files = PrivateStream::basePath();
-    if (!empty($private_files)) {
-      // Remove leading slash if set.
-      if (strrpos($private_files, '/') !== FALSE) {
-        $private_files = substr($private_files, strrpos($private_files, '/') + 1);
-      }
-      $ignore[] = $private_files;
-    }
-
-    Drupal::moduleHandler()->alter('security_review_file_ignore', $ignore);
-    $parsed = array(realpath('.'));
-    $files = $this->scan('.', $parsed, $ignore);
+    $fileList = $this->getFileList('.');
+    $writable = Security::findWritableFiles($fileList, $CLI);
 
     // Try creating or appending files.
-    // Assume it doesn't work.    $create_status = $append_status = FALSE;
+    // Assume it doesn't work.
+    $create_status = FALSE;
+    $append_status = FALSE;
 
-    $append_message = t("Your web server should not be able to write to your modules directory. This is a security vulnerable. Consult the Security Review file permissions check help for mitigation steps.");
+    if (!$CLI) {
+      $append_message = t("Your web server should not be able to write to your modules directory. This is a security vulnerable. Consult the Security Review file permissions check help for mitigation steps.");
+      $directory = Drupal::moduleHandler()
+        ->getModule('security_review')
+        ->getPath();
 
-    $directory = Drupal::moduleHandler()->getModule('security_review')->getPath();
-    // Write a file with the timestamp
-    $file = './' . $directory . '/file_write_test.' . date('Ymdhis');
-    if ($file_create = @fopen($file, 'w')) {
-      $create_status = fwrite($file_create, date('Ymdhis') . ' - ' . $append_message . "\n");
-      fclose($file_create);
+      // Write a file with the timestamp
+      $file = './' . $directory . '/file_write_test.' . date('Ymdhis');
+      if ($file_create = @fopen($file, 'w')) {
+        $create_status = fwrite($file_create, date('Ymdhis') . ' - ' . $append_message . "\n");
+        fclose($file_create);
+      }
+
+      // Try to append to our IGNOREME file.
+      $file = './' . $directory . '/IGNOREME.txt';
+      if ($file_append = @fopen($file, 'a')) {
+        $append_status = fwrite($file_append, date('Ymdhis') . ' - ' . $append_message . "\n");
+        fclose($file_append);
+      }
     }
-    // Try to append to our IGNOREME file.
-    $file = './'. $directory . '/IGNOREME.txt';
-    if ($file_append = @fopen($file, 'a')) {
-      $append_status = fwrite($file_append, date('Ymdhis') . ' - ' . $append_message . "\n");
-      fclose($file_append);
-    }
 
-    if (count($files) || $create_status || $append_status) {
+    if (!empty($writable) || $create_status || $append_status) {
       $result = CheckResult::FAIL;
     }
 
-    return $this->createResult($result, $files);
+    return $this->createResult($result, $writable);
   }
 
   /**
-   * Scans a directory recursively and returns the writable items inside it.
-   *
-   * @param string $directory
-   *   The directory to scan.
-   * @param string[] $parsed
-   *   Array of already parsed real paths.
-   * @param string[] $ignore
-   *   Array of file names to ignore.
-   * @return string[]
-   *   The writable items found.
+   * {@inheritdoc}
    */
-  public function scan($directory, &$parsed, $ignore) {
-    $items = array();
-    if ($handle = opendir($directory)) {
-      while (($file = readdir($handle)) !== FALSE) {
-        // Don't check hidden files or ones we said to ignore.
-        $path = $directory . "/" . $file;
-        if ($file[0] != "." && !in_array($file, $ignore) && !in_array(realpath($path), $ignore)) {
-          if (is_dir($path) && !in_array(realpath($path), $parsed)) {
-            $parsed[] = realpath($path);
-            $items = array_merge($items, $this->scan($path, $parsed, $ignore));
-            if (is_writable($path)) {
-              $items[] = preg_replace("/\/\//si", "/", $path);
-            }
-          }
-          elseif (is_writable($path)) {
-            $items[] = preg_replace("/\/\//si", "/", $path);
-          }
-        }
-
-      }
-      closedir($handle);
+  public function runCli() {
+    if (!SecurityReview::isServerPosix()) {
+      return $this->createResult(CheckResult::INFO);
     }
-    return $items;
+
+    return $this->run(TRUE);
   }
 
   /**
@@ -201,9 +164,84 @@ class FilePermissions extends Check {
         return 'Drupal installation files and directories (except required) are not writable by the server.';
       case CheckResult::FAIL:
         return 'Some files and directories in your install are writable by the server.';
+      case CheckResult::INFO:
+        return 'The test cannot be run on this system.';
       default:
         return 'Unexpected result.';
     }
+  }
+
+  /**
+   * Scans a directory recursively and returns the files and directories inside.
+   *
+   * @param string $directory
+   *   The directory to scan.
+   * @param string[] $parsed
+   *   Array of already parsed real paths.
+   * @param string[] $ignore
+   *   Array of file names to ignore.
+   *
+   * @return string[]
+   *   The items found.
+   */
+  protected function getFileList($directory, &$parsed = NULL, &$ignore = NULL) {
+    // Initialize $parsed and $ignore arrays.
+    if ($parsed === NULL) {
+      $parsed = array(realpath($directory));
+    }
+    if ($ignore === NULL) {
+      $ignore = $this->getIgnoreList();
+    }
+
+    // Start scanning.
+    $items = array();
+    if ($handle = opendir($directory)) {
+      while (($file = readdir($handle)) !== FALSE) {
+        // Don't check hidden files or ones we said to ignore.
+        $path = $directory . "/" . $file;
+        if ($file[0] != "." && !in_array($file, $ignore) && !in_array(realpath($path), $ignore)) {
+          if (is_dir($path) && !in_array(realpath($path), $parsed)) {
+            $parsed[] = realpath($path);
+            $items = array_merge($items, $this->getFileList($path, $parsed, $ignore));
+          }
+          $items[] = preg_replace("/\/\//si", "/", $path);
+        }
+      }
+      closedir($handle);
+    }
+
+    return $items;
+  }
+
+  /**
+   * Returns an array of relative and canonical path strings to ignore while
+   * running the check.
+   *
+   * @return string[]
+   *   List of relative and canonical file paths to ignore.
+   */
+  protected function getIgnoreList() {
+    $file_path = PublicStream::basePath();
+    $ignore = array('..', 'CVS', '.git', '.svn', '.bzr', realpath($file_path));
+
+    // Add temporary files directory if it's set.
+    $temp_path = file_directory_temp();
+    if (!empty($temp_path)) {
+      $ignore[] = realpath('./' . rtrim($temp_path, '/'));
+    }
+
+    // Add private files directory if it's set.
+    $private_files = PrivateStream::basePath();
+    if (!empty($private_files)) {
+      // Remove leading slash if set.
+      if (strrpos($private_files, '/') !== FALSE) {
+        $private_files = substr($private_files, strrpos($private_files, '/') + 1);
+      }
+      $ignore[] = $private_files;
+    }
+
+    Drupal::moduleHandler()->alter('security_review_file_ignore', $ignore);
+    return $ignore;
   }
 
 }

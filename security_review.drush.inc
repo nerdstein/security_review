@@ -7,7 +7,6 @@
 
 use Drupal\security_review\Checklist;
 use Drupal\security_review\CheckResult;
-use Drupal\security_review\Checks\FilePermissions;
 use Drupal\security_review\SecurityReview;
 
 /**
@@ -97,10 +96,6 @@ function security_review_drush() {
     else {
       // Get the whole checklist.
       $checks = Checklist::getChecks();
-
-      // Unset file_perms of security_review because drush is running as a
-      // different user.
-      $skip_checks[] = 'security_review:file_perms';
     }
 
     // Remove checks listed after --skip.

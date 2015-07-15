@@ -256,4 +256,52 @@ class Security {
     return $unsafe_ext;
   }
 
+  /**
+   * Iterates through files and determines which are writable by the web
+   * server's user.
+   *
+   * @param string[] $files
+   *   The files to iterate through.
+   * @param bool $CLI
+   *   Whether it is being invoked in CLI context.
+   *
+   * @return string[]
+   *   The files that are writable.
+   */
+  public static function findWritableFiles(array $files, $CLI = FALSE) {
+    $writable = array();
+    if (!$CLI) {
+      foreach ($files as $file) {
+        if (is_writable($file)) {
+          $writable[] = $file;
+        }
+      }
+    }
+    else {
+      $UID = SecurityReview::getServerUID();
+      $GIDs = SecurityReview::getServerGIDs();
+
+      foreach ($files as $file) {
+        $perms = 0777 & fileperms($file);
+        $ow = ($perms >> 1) & 1;
+        if ($ow === 1) {
+          $writable[] = $file;
+          continue;
+        }
+
+        $uw = ($perms >> 7) & 1;
+        if ($uw === 1 && fileowner($file) == $UID) {
+          $writable[] = $file;
+          continue;
+        }
+
+        $gw = ($perms >> 4) & 1;
+        if ($gw === 1 && in_array(filegroup($file), $GIDs)) {
+          $writable[] = $file;
+        }
+      }
+    }
+    return $writable;
+  }
+
 }
