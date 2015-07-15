@@ -39,14 +39,15 @@ class ExecutablePhp extends Check {
    * {@inheritdoc}
    */
   public function run($CLI = FALSE) {
+    global $base_url;
     $result = CheckResult::SUCCESS;
     $findings = array();
 
-    global $base_url;
+    // Get the HTTP client.
     $http_client = \Drupal::service('http_client');
     /** @var \Drupal\Core\Http\Client $http_client */
 
-    // Test file data.
+    // Set up test file data.
     $message = 'Security review test ' . date('Ymdhis');
     $content = "<?php\necho '" . $message . "';";
     $file_path = PublicStream::basePath() . '/security_review_test.php';
@@ -80,6 +81,7 @@ class ExecutablePhp extends Check {
       $findings[] = 'missing_htaccess';
     }
     else {
+      // Check whether the contents of .htaccess are correct.
       $contents = file_get_contents($htaccess_path);
       $expected = FileStorage::htaccessLines(FALSE);
 
@@ -127,10 +129,12 @@ class ExecutablePhp extends Check {
     $paragraphs[] = "The Drupal files directory is for user-uploaded files and by default provides some protection against a malicious user executing arbitrary PHP code against your site.";
     $paragraphs[] = t(
       'Read more about the !risks.',
-      array('!risks' => Drupal::l(
-        'risk of PHP code execution on Drupal.org',
-        Url::fromUri('https://drupal.org/node/615888')
-      ))
+      array(
+        '!risks' => Drupal::l(
+          'risk of PHP code execution on Drupal.org',
+          Url::fromUri('https://drupal.org/node/615888')
+        )
+      )
     );
 
     return array(
@@ -175,8 +179,25 @@ class ExecutablePhp extends Check {
    * {@inheritdoc}
    */
   public function evaluatePlain(CheckResult $result) {
-    $evaluation = $this->evaluate($result)['#paragraphs'];
-    return implode("\n", $evaluation);
+    $paragraphs = array();
+    $directory = PublicStream::basePath();
+    foreach ($result->findings() as $label) {
+      switch ($label) {
+        case 'executable_php':
+          $paragraphs[] = t('PHP file executed in !path', array('!path' => $directory));
+          break;
+        case 'missing_htaccess':
+          $paragraphs[] = t('.htaccess is missing from !path', array('!path' => $directory));
+          break;
+        case 'incorrect_htaccess':
+          $paragraphs[] = t('.htaccess wrong content');
+          break;
+        case 'writable_htaccess':
+          $paragraphs[] = t('.htaccess writable');
+          break;
+      }
+    }
+    return implode("\n", $paragraphs);
   }
 
   /**

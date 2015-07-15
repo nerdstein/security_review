@@ -35,7 +35,10 @@ class ErrorReporting extends Check {
    * {@inheritdoc}
    */
   public function run() {
+    // Get the error level.
     $error_level = Drupal::config('system.logging')->get('error_level');
+
+    // Determine the result.
     if (is_null($error_level) || $error_level != 'hide') {
       $result = CheckResult::FAIL;
     }
@@ -91,7 +94,7 @@ class ErrorReporting extends Check {
     }
 
     if (isset($result->findings()['level'])) {
-      return t('error level: !level', array(
+      return t('Error level: !level', array(
         '!level' => $result->findings()['level']
       ));
     }

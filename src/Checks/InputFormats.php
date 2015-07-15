@@ -58,8 +58,17 @@ class InputFormats extends Check {
       if (!empty($intersect)) {
         // Untrusted users can use this format.
         // Check format for enabled HTML filter.
-        if ($format->filters()->has('filter_html') &&
-        $format->filters('filter_html')->getConfiguration()['status']) {
+
+        $filter_html_enabled = FALSE;
+        if ($format->filters()->has('filter_html')) {
+          $filter_html_enabled = $format->filters('filter_html')->getConfiguration()['status'];
+        }
+        $filter_html_escape_enabled = FALSE;
+        if ($format->filters()->has('filter_html_escape')) {
+          $filter_html_escape_enabled = $format->filters('filter_html_escape')->getConfiguration()['status'];
+        }
+
+        if ($filter_html_enabled) {
           $filter = $format->filters('filter_html');
 
           // Check for unsafe tags in allowed tags.
@@ -69,8 +78,7 @@ class InputFormats extends Check {
             $findings['tags'][$format->id()] = $tag;
           }
         }
-        elseif (!$format->filters()->has('filter_html_escape') ||
-        !$format->filters('filter_html_escape')->getConfiguration()['status']) {
+        elseif (!$filter_html_escape_enabled) {
           // Format is usable by untrusted users but does not contain the HTML Filter or the HTML escape.
           $findings['formats'][$format->id()] = $format->label();
         }
@@ -141,14 +149,14 @@ class InputFormats extends Check {
     $output = '';
 
     if (!empty($result->findings()['tags'])) {
-      $output .= "Tags:\n";
+      $output .= t('Tags') . "\n";
       foreach ($result->findings()['tags'] as $tag) {
         $output .= "\t$tag\n";
       }
     }
 
     if (!empty($result->findings()['formats'])) {
-      $output .= "Formats:\n";
+      $output .= t('Formats') . "\n";
       foreach ($result->findings()['formats'] as $format) {
         $output .= "\t$format\n";
       }

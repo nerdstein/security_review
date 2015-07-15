@@ -105,7 +105,7 @@ abstract class Check {
   public abstract function getTitle();
 
   /**
-   * Returns the unique identifier constructed using the namespace, id pair.
+   * Returns the identifier constructed using the namespace and title values.
    *
    * @return string
    *   Unique identifier of the check.
@@ -215,7 +215,7 @@ abstract class Check {
   public function lastResult($getFindings = FALSE) {
     $statePrefix = $this->statePrefix . 'last_result.';
     $result = Drupal::state()->get($statePrefix . 'result');
-    if($getFindings) {
+    if ($getFindings) {
       $findings = Drupal::state()->get($statePrefix . 'findings');
     }
     else {
@@ -267,7 +267,8 @@ abstract class Check {
    *   The timestamp of the last stored result.
    */
   public function lastRun() {
-    $lastResultTime = Drupal::state()->get($this->statePrefix . 'last_result.time');
+    $lastResultTime = Drupal::state()
+      ->get($this->statePrefix . 'last_result.time');
 
     if (!is_int($lastResultTime)) {
       return 0;

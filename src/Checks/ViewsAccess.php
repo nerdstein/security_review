@@ -9,9 +9,9 @@ namespace Drupal\security_review\Checks;
 
 use Drupal;
 use Drupal\Core\Url;
-use Drupal\views\Entity\View;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
+use Drupal\views\Entity\View;
 
 /**
  * Checks for Views that do not check access.
@@ -124,7 +124,7 @@ class ViewsAccess extends Check {
       return '';
     }
 
-    $output = '';
+    $output = t('Views without access check:') . ":\n";
     foreach ($findings as $view_id => $displays) {
       $output .= "\t" . $view_id . ": " . implode(', ', $displays) . "\n";
     }

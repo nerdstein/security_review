@@ -7,8 +7,10 @@
 
 namespace Drupal\security_review\Checks;
 
+use Drupal;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
+use Drupal\security_review\Security;
 
 /**
  * Check for sensitive temporary files like settings.php~.
@@ -36,8 +38,9 @@ class TemporaryFiles extends Check {
     $result = CheckResult::SUCCESS;
     $findings = array();
 
+    // Get list of files from the site directory.
     $files = array();
-    $sitePath = DRUPAL_ROOT . '/' . \Drupal::service('kernel')->getSitePath() . '/';
+    $sitePath = Security::sitePath() . '/';
     $dir = scandir($sitePath);
     foreach ($dir as $file) {
       // Set full path to only files.
@@ -45,14 +48,19 @@ class TemporaryFiles extends Check {
         $files[] = $sitePath . $file;
       }
     }
+    Drupal::moduleHandler()->alter('security_review_temporary_files', $files);
 
-    \Drupal::moduleHandler()->alter('security_review_temporary_files', $files);
+    // Analyze the files' names.
     foreach ($files as $path) {
       $matches = array();
       if (file_exists($path) && preg_match('/.*(~|\.sw[op]|\.bak|\.orig|\.save)$/', $path, $matches) !== FALSE && !empty($matches)) {
-        $result = CheckResult::FAIL;
+        // Found a temporary file.
         $findings[] = $path;
       }
+    }
+
+    if (!empty($findings)) {
+      $result = CheckResult::FAIL;
     }
 
     return $this->createResult($result, $findings);
@@ -100,7 +108,7 @@ class TemporaryFiles extends Check {
       return '';
     }
 
-    $output = '';
+    $output = t('Temporary files:') . "\n";
     foreach ($findings as $file) {
       $output .= "\t" . $file . "\n";
     }

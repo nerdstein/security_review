@@ -17,7 +17,8 @@ class Checklist {
   /**
    * Private constructor for disabling instantiation of the static class.
    */
-  private function __construct() {}
+  private function __construct() {
+  }
 
   /**
    * Array of cached Checks.
@@ -145,7 +146,8 @@ class Checklist {
   public static function getCheck($namespace, $title) {
     foreach (static::getChecks() as $check) {
       if ($check->getMachineNamespace() == $namespace
-        && $check->getMachineTitle() == $title) {
+        && $check->getMachineTitle() == $title
+      ) {
         return $check;
       }
     }
@@ -154,15 +156,17 @@ class Checklist {
   }
 
   /**
-   * @param string $uniqueIdentifier
+   * Finds a Check by it's id.
+   *
+   * @param string $id
    *   The machine namespace of the requested check.
    *
    * @return null|\Drupal\security_review\Check
    *   The Check or null if it doesn't exist.
    */
-  public static function getCheckByIdentifier($uniqueIdentifier) {
+  public static function getCheckByIdentifier($id) {
     foreach (static::getChecks() as $check) {
-      if ($check->id() == $uniqueIdentifier) {
+      if ($check->id() == $id) {
         return $check;
       }
     }

@@ -43,14 +43,14 @@ class AdminPermissions extends Check {
     $result = CheckResult::SUCCESS;
     $findings = array();
 
-    // Collect permissions marked as for trusted users only.
+    // Get every permission.
     $all_permissions = Security::permissions(TRUE);
-    $all_keys = array_keys($all_permissions);
+    $all_permission_strings = array_keys($all_permissions);
 
     // Get permissions for untrusted roles.
     $untrusted_permissions = Security::untrustedPermissions(TRUE);
     foreach ($untrusted_permissions as $rid => $permissions) {
-      $intersect = array_intersect($all_keys, $permissions);
+      $intersect = array_intersect($all_permission_strings, $permissions);
       foreach ($intersect as $permission) {
         if (isset($all_permissions[$permission]['restrict access'])) {
           $findings[$rid][] = $permission;
@@ -76,20 +76,6 @@ class AdminPermissions extends Check {
       '#title' => 'Admin and trusted Drupal permissions',
       '#paragraphs' => $paragraphs
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getMessage($resultConst) {
-    switch ($resultConst) {
-      case CheckResult::SUCCESS:
-        return 'Untrusted roles do not have administrative or trusted Drupal permissions.';
-      case CheckResult::FAIL:
-        return 'Untrusted roles have been granted administrative or trusted Drupal permissions.';
-      default:
-        return "Unexpected result.";
-    }
   }
 
   /**
@@ -146,6 +132,20 @@ class AdminPermissions extends Check {
     }
 
     return $output;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMessage($resultConst) {
+    switch ($resultConst) {
+      case CheckResult::SUCCESS:
+        return 'Untrusted roles do not have administrative or trusted Drupal permissions.';
+      case CheckResult::FAIL:
+        return 'Untrusted roles have been granted administrative or trusted Drupal permissions.';
+      default:
+        return "Unexpected result.";
+    }
   }
 
 }
