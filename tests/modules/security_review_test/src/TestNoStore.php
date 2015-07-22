@@ -9,12 +9,11 @@ namespace Drupal\security_review_test;
 
 /**
  * A test security check for testing extensibility.
- * This one does not store findings.
  */
 class TestNoStore extends Test {
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function getTitle() {
     return 'Test without storing findings';

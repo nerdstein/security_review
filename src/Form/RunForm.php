@@ -13,14 +13,14 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\security_review\Checklist;
 
 /**
- * 'Run' form class.
+ * Provides implementation for the Run form.
  */
 class RunForm extends FormBase {
 
   /**
    * {@inheritdoc}
    */
-  public function getFormID() {
+  public function getFormId() {
     return 'security-review-run';
   }
 
