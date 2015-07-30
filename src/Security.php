@@ -7,7 +7,10 @@
 
 namespace Drupal\security_review;
 
-use Drupal;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\Core\DrupalKernelInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 
@@ -16,10 +19,53 @@ use Drupal\user\Entity\Role;
  */
 class Security {
 
+  use DependencySerializationTrait;
+
   /**
-   * Private constructor for disabling instantiation of the static class.
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  private function __construct() {
+  protected $configFactory;
+
+  /**
+   * The Drupal kernel.
+   *
+   * @var \Drupal\Core\DrupalKernelInterface
+   */
+  protected $kernel;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * The security_review service.
+   *
+   * @var \Drupal\security_review\SecurityReview
+   */
+  protected $securityReview;
+
+  /**
+   * Constructs a Security instance.
+   *
+   * @param \Drupal\security_review\SecurityReview $security_review
+   *   The SecurityReview service.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
+   * @param \Drupal\Core\DrupalKernelInterface $kernel
+   *   The Drupal kernel.
+   */
+  public function __construct(SecurityReview $security_review, ModuleHandlerInterface $module_handler, ConfigFactoryInterface $config_factory, DrupalKernelInterface $kernel) {
+    $this->securityReview = $security_review;
+    $this->moduleHandler = $module_handler;
+    $this->configFactory = $config_factory;
+    $this->kernel = $kernel;
   }
 
   /**
@@ -31,15 +77,15 @@ class Security {
    * @return string[]
    *   Untrusted roles' IDs.
    */
-  public static function untrustedRoles() {
+  public function untrustedRoles() {
     // If the module hasn't been manually configured yet, return the untrusted
     // roles depending on Drupal's actual configuration.
-    if (!SecurityReview::isConfigured()) {
+    if (!$this->securityReview->isConfigured()) {
       return static::defaultUntrustedRoles();
     }
 
     // Else return the stored untrusted roles.
-    return SecurityReview::getUntrustedRoles();
+    return $this->securityReview->getUntrustedRoles();
   }
 
   /**
@@ -52,12 +98,13 @@ class Security {
    * @return string[]
    *   Default untrusted roles' IDs.
    */
-  public static function defaultUntrustedRoles() {
+  public function defaultUntrustedRoles() {
     // Add the Anonymous role to the output array.
     $roles = array(AccountInterface::ANONYMOUS_ROLE);
 
     // Check whether visitors can create accounts.
-    $user_register = Drupal::config('user.settings')->get('register');
+    $user_register = $this->configFactory->get('user.settings')
+      ->get('register');
     if ($user_register !== USER_REGISTER_ADMINISTRATORS_ONLY) {
       // If visitors are allowed to create accounts they are considered
       // untrusted.
@@ -81,7 +128,7 @@ class Security {
    *   true, the array key is the role ID, the value is the array of permissions
    *   the role has.
    */
-  public static function rolePermissions(array $role_ids, $group_by_role_id = FALSE) {
+  public function rolePermissions(array $role_ids, $group_by_role_id = FALSE) {
     // Get the permissions the given roles have, grouped by roles.
     $permissions_grouped = user_role_permissions($role_ids);
 
@@ -90,7 +137,7 @@ class Security {
       $role = Role::load($role_id);
       /** @var Role $role */
       if ($role->isAdmin()) {
-        $permissions_grouped[$role_id] = static::permissions();
+        $permissions_grouped[$role_id] = $this->permissions();
       }
     }
 
@@ -122,8 +169,8 @@ class Security {
    *   true, the array key is the role ID, the value is the array of permissions
    *   the role has.
    */
-  public static function untrustedPermissions($group_by_role_id = FALSE) {
-    return static::rolePermissions(static::untrustedRoles(), $group_by_role_id);
+  public function untrustedPermissions($group_by_role_id = FALSE) {
+    return $this->rolePermissions($this->untrustedRoles(), $group_by_role_id);
   }
 
   /**
@@ -132,9 +179,9 @@ class Security {
    * @return array
    *   Trusted roles' IDs.
    */
-  public static function trustedRoles() {
+  public function trustedRoles() {
     // Get the stored/default untrusted roles.
-    $untrusted_roles = static::untrustedRoles();
+    $untrusted_roles = $this->untrustedRoles();
 
     // Iterate through all the roles, and store which are not untrusted.
     $trusted = array();
@@ -159,8 +206,8 @@ class Security {
    *   true, the array key is the role ID, the value is the array of permissions
    *   the role has.
    */
-  public static function trustedPermissions($group_by_role_id = FALSE) {
-    return static::rolePermissions(static::trustedRoles(), $group_by_role_id);
+  public function trustedPermissions($group_by_role_id = FALSE) {
+    return $this->rolePermissions($this->trustedRoles(), $group_by_role_id);
   }
 
 
@@ -175,7 +222,8 @@ class Security {
    * @return array
    *   Array of every permission.
    */
-  public static function permissions($meta = FALSE) {
+  public function permissions($meta = FALSE) {
+    // Not injected because of hard testability.
     $permissions = \Drupal::service('user.permissions')->getPermissions();
 
     if (!$meta) {
@@ -190,7 +238,7 @@ class Security {
    * @return string[]
    *   List of unsafe tags.
    */
-  public static function unsafeTags() {
+  public function unsafeTags() {
     $unsafe_tags = array(
       'applet',
       'area',
@@ -234,7 +282,7 @@ class Security {
       'video',
       'vmlframe',
     );
-    Drupal::moduleHandler()->alter('security_review_unsafe_tags', $unsafe_tags);
+    $this->moduleHandler->alter('security_review_unsafe_tags', $unsafe_tags);
     return $unsafe_tags;
   }
 
@@ -244,7 +292,7 @@ class Security {
    * @return string[]
    *   List of unsafe extensions.
    */
-  public static function unsafeExtensions() {
+  public function unsafeExtensions() {
     $unsafe_ext = array(
       'swf',
       'exe',
@@ -258,7 +306,7 @@ class Security {
       'vbe',
       'vbs',
     );
-    Drupal::moduleHandler()
+    $this->moduleHandler
       ->alter('security_review_unsafe_extensions', $unsafe_ext);
     return $unsafe_ext;
   }
@@ -269,8 +317,8 @@ class Security {
    * @return string
    *   Absolute site path.
    */
-  public static function sitePath() {
-    return DRUPAL_ROOT . '/' . \Drupal::service('kernel')->getSitePath();
+  public function sitePath() {
+    return DRUPAL_ROOT . '/' . $this->kernel->getSitePath();
   }
 
   /**
@@ -284,7 +332,7 @@ class Security {
    * @return string[]
    *   The files that are writable.
    */
-  public static function findWritableFiles(array $files, $cli = FALSE) {
+  public function findWritableFiles(array $files, $cli = FALSE) {
     $writable = array();
     if (!$cli) {
       foreach ($files as $file) {
@@ -294,8 +342,8 @@ class Security {
       }
     }
     else {
-      $uid = SecurityReview::getServerUid();
-      $gids = SecurityReview::getServerGids();
+      $uid = $this->securityReview->getServerUid();
+      $gids = $this->securityReview->getServerGids();
 
       foreach ($files as $file) {
         $perms = 0777 & fileperms($file);

@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Checks;
 
-use Drupal;
 use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\TypedData\TypedDataInterface;
@@ -55,7 +54,7 @@ class Field extends Check {
 
     // Load all of the entities.
     $entities = array();
-    $bundle_info = Drupal::entityManager()->getAllBundleInfo();
+    $bundle_info = $this->entityManager()->getAllBundleInfo();
     foreach ($bundle_info as $entity_type_id => $bundles) {
       $entities = array_merge($entities, entity_load_multiple($entity_type_id));
     }
@@ -107,11 +106,11 @@ class Field extends Check {
    */
   public function help() {
     $paragraphs = array();
-    $paragraphs[] = "Script and PHP code in content does not align with Drupal best practices and may be a vulnerability if an untrusted user is allowed to edit such content. It is recommended you remove such contents.";
+    $paragraphs[] = $this->t('Script and PHP code in content does not align with Drupal best practices and may be a vulnerability if an untrusted user is allowed to edit such content. It is recommended you remove such contents.');
 
     return array(
       '#theme' => 'check_help',
-      '#title' => 'Dangerous tags in content',
+      '#title' => $this->t('Dangerous tags in content'),
       '#paragraphs' => $paragraphs,
     );
   }
@@ -126,7 +125,7 @@ class Field extends Check {
     }
 
     $paragraphs = array();
-    $paragraphs[] = "The following items potentially have dangerous tags.";
+    $paragraphs[] = $this->t('The following items potentially have dangerous tags.');
 
     $items = array();
     foreach ($findings as $entity_type_id => $entities) {
@@ -137,12 +136,12 @@ class Field extends Check {
           if ($url === NULL) {
             $url = $entity->urlInfo();
           }
-          $items[] = t(
+          $items[] = $this->t(
             '@vulnerabilities found in <em>@field</em> field of !link',
             array(
               '@vulnerabilities' => implode(' and ', $finding),
               '@field' => $field,
-              '!link' => Drupal::l(
+              '!link' => $this->l(
                 $entity->label(),
                 $url
               ),
@@ -177,7 +176,7 @@ class Field extends Check {
           if ($url === NULL) {
             $url = $entity->url();
           }
-          $output .= "\t" . t(
+          $output .= "\t" . $this->t(
               '@vulnerabilities in @field of !link',
               array(
                 '@vulnerabilities' => implode(' and ', $finding),
@@ -198,13 +197,13 @@ class Field extends Check {
   public function getMessage($result_const) {
     switch ($result_const) {
       case CheckResult::SUCCESS:
-        return 'Dangerous tags were not found in any submitted content (fields).';
+        return $this->t('Dangerous tags were not found in any submitted content (fields).');
 
       case CheckResult::FAIL:
-        return 'Dangerous tags were found in submitted content (fields).';
+        return $this->t('Dangerous tags were found in submitted content (fields).');
 
       default:
-        return 'Unexpected result.';
+        return $this->t('Unexpected result.');
     }
   }
 

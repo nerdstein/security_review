@@ -10,7 +10,6 @@ namespace Drupal\security_review\Checks;
 use Drupal;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
-use Drupal\security_review\Security;
 
 /**
  * Check for sensitive temporary files like settings.php~.
@@ -40,7 +39,7 @@ class TemporaryFiles extends Check {
 
     // Get list of files from the site directory.
     $files = array();
-    $site_path = Security::sitePath() . '/';
+    $site_path = $this->security()->sitePath() . '/';
     $dir = scandir($site_path);
     foreach ($dir as $file) {
       // Set full path to only files.
@@ -48,7 +47,7 @@ class TemporaryFiles extends Check {
         $files[] = $site_path . $file;
       }
     }
-    Drupal::moduleHandler()->alter('security_review_temporary_files', $files);
+    $this->moduleHandler()->alter('security_review_temporary_files', $files);
 
     // Analyze the files' names.
     foreach ($files as $path) {
@@ -71,11 +70,11 @@ class TemporaryFiles extends Check {
    */
   public function help() {
     $paragraphs = array();
-    $paragraphs[] = "Some file editors create temporary copies of a file that can be left on the file system. A copy of a sensitive file like Drupal's settings.php may be readable by a malicious user who could use that information to further attack a site.";
+    $paragraphs[] = $this->t("Some file editors create temporary copies of a file that can be left on the file system. A copy of a sensitive file like Drupal's settings.php may be readable by a malicious user who could use that information to further attack a site.");
 
     return array(
       '#theme' => 'check_help',
-      '#title' => 'Sensitive temporary files',
+      '#title' => $this->t('Sensitive temporary files'),
       '#paragraphs' => $paragraphs,
     );
   }
@@ -90,7 +89,7 @@ class TemporaryFiles extends Check {
     }
 
     $paragraphs = array();
-    $paragraphs[] = "The following are extraneous files in your Drupal installation that can probably be removed. You should confirm you have saved any of your work in the original files prior to removing these.";
+    $paragraphs[] = $this->t("The following are extraneous files in your Drupal installation that can probably be removed. You should confirm you have saved any of your work in the original files prior to removing these.");
 
     return array(
       '#theme' => 'check_evaluation',
@@ -108,7 +107,7 @@ class TemporaryFiles extends Check {
       return '';
     }
 
-    $output = t('Temporary files:') . "\n";
+    $output = $this->t('Temporary files:') . "\n";
     foreach ($findings as $file) {
       $output .= "\t" . $file . "\n";
     }
@@ -122,13 +121,13 @@ class TemporaryFiles extends Check {
   public function getMessage($result_const) {
     switch ($result_const) {
       case CheckResult::SUCCESS:
-        return 'No sensitive temporary files were found.';
+        return $this->t('No sensitive temporary files were found.');
 
       case CheckResult::FAIL:
-        return 'Sensitive temporary files were found on your files system.';
+        return $this->t('Sensitive temporary files were found on your files system.');
 
       default:
-        return 'Unexpected result.';
+        return $this->t('Unexpected result.');
     }
   }
 

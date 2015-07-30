@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Checks;
 
-use Drupal;
 use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
@@ -35,8 +34,8 @@ class FailedLogins extends Check {
    * {@inheritdoc}
    */
   public function run() {
-    // If dblog is not enabled return with INFO.
-    if (!Drupal::moduleHandler()->moduleExists('dblog')) {
+    // If dblog is not enabled return with HIDE.
+    if (!$this->moduleHandler()->moduleExists('dblog')) {
       return $this->createResult(CheckResult::INFO);
     }
 
@@ -45,7 +44,7 @@ class FailedLogins extends Check {
     $last_result = $this->lastResult();
 
     // Prepare the query.
-    $query = Drupal::database()->select('watchdog', 'w');
+    $query = $this->database()->select('watchdog', 'w');
     $query->fields('w', array(
       'severity',
       'type',
@@ -98,11 +97,11 @@ class FailedLogins extends Check {
    */
   public function help() {
     $paragraphs = array();
-    $paragraphs[] = "Failed login attempts from the same IP may be an artifact of a malicious user attempting to brute-force their way onto your site as an authenticated user to carry out nefarious deeds.";
+    $paragraphs[] = $this->t('Failed login attempts from the same IP may be an artifact of a malicious user attempting to brute-force their way onto your site as an authenticated user to carry out nefarious deeds.');
 
     return array(
       '#theme' => 'check_help',
-      '#title' => 'Abundant failed logins from the same IP',
+      '#title' => $this->t('Abundant failed logins from the same IP'),
       '#paragraphs' => $paragraphs,
     );
   }
@@ -117,7 +116,7 @@ class FailedLogins extends Check {
     }
 
     $paragraphs = array();
-    $paragraphs[] = "The following IPs were observed with an abundance of failed login attempts.";
+    $paragraphs[] = $this->t('The following IPs were observed with an abundance of failed login attempts.');
 
     return array(
       '#theme' => 'check_evaluation',
@@ -135,7 +134,7 @@ class FailedLogins extends Check {
       return '';
     }
 
-    $output = t('Suspicious IP addresses:') . ":\n";
+    $output = $this->t('Suspicious IP addresses:') . ":\n";
     foreach ($findings as $ip) {
       $output .= "\t" . $ip . "\n";
     }
@@ -149,13 +148,13 @@ class FailedLogins extends Check {
   public function getMessage($result_const) {
     switch ($result_const) {
       case CheckResult::FAIL:
-        return 'Failed login attempts from the same IP. These may be a brute-force attack to gain access to your site.';
+        return $this->t('Failed login attempts from the same IP. These may be a brute-force attack to gain access to your site.');
 
       case CheckResult::INFO:
-        return 'Module dblog is not enabled.';
+        return $this->t('Module dblog is not enabled.');
 
       default:
-        return 'Unexpected result.';
+        return $this->t('Unexpected result.');
     }
   }
 

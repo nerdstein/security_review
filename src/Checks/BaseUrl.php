@@ -50,12 +50,12 @@ class BaseUrl extends Check {
    * {@inheritdoc}
    */
   public function run() {
-    $settings_php = Security::sitePath() . '/settings.php';
+    $settings_php = $this->security()->sitePath() . '/settings.php';
     $result = CheckResult::FAIL;
     $findings = array();
 
     if (!file_exists($settings_php)) {
-      return $this->createResult(CheckResult::INFO, array(t("Couldn't determine settings.php's path.")));
+      return $this->createResult(CheckResult::HIDE);
     }
 
     if ($this->settings()->get('method', 'token') === 'token') {
@@ -93,11 +93,11 @@ class BaseUrl extends Check {
    */
   public function help() {
     $paragraphs = array();
-    $paragraphs[] = "Setting Drupal's \$base_url in settings.php can help protect against attackers manipulating links to your site. For example, an attacker could exploit a missing \$base_url setting to carry out a phishing attack that may lead to the theft of your site's private user data.";
+    $paragraphs[] = $this->t("Setting Drupal's \$base_url in settings.php can help protect against attackers manipulating links to your site. For example, an attacker could exploit a missing \$base_url setting to carry out a phishing attack that may lead to the theft of your site's private user data.");
 
     return array(
       '#theme' => 'check_help',
-      '#title' => 'Drupal base URL',
+      '#title' => $this->t('Drupal base URL'),
       '#paragraphs' => $paragraphs,
     );
   }
@@ -112,16 +112,14 @@ class BaseUrl extends Check {
 
     $findings = $result->findings();
     $paragraphs = array();
-    $paragraphs[] = t(
+    $paragraphs[] = $this->t(
       'Your site is available at the following URL: !url.',
       array('!url' => $findings['base_url']));
-    $paragraphs[] = t(
+    $paragraphs[] = $this->t(
       "If your site should only be available at that URL it is recommended that you set it as the \$base_url variable in the settings.php file at !file",
       array('!file' => $findings['settings'])
     );
-    $paragraphs[] = t(
-      "Or, if you are using Drupal's multi-site functionality then you should set the \$base_url variable for the appropriate settings.php for your site."
-    );
+    $paragraphs[] = $this->t("Or, if you are using Drupal's multi-site functionality then you should set the \$base_url variable for the appropriate settings.php for your site.");
 
     return array(
       '#theme' => 'check_evaluation',
@@ -142,7 +140,7 @@ class BaseUrl extends Check {
         return t('Base URL is not set in settings.php.');
 
       default:
-        return "Unexpected result.";
+        return $this->t("Unexpected result.");
     }
   }
 
