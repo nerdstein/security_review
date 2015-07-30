@@ -37,7 +37,7 @@ class QueryErrors extends Check {
   public function run() {
     // If dblog is not enabled return with INFO.
     if (!$this->moduleHandler()->moduleExists('dblog')) {
-      return $this->createResult(CheckResult::INFO);
+      return $this->createResult(CheckResult::HIDE);
     }
 
     $result = CheckResult::HIDE;
@@ -163,9 +163,6 @@ class QueryErrors extends Check {
     switch ($result_const) {
       case CheckResult::FAIL:
         return $this->t('Query errors from the same IP. These may be a SQL injection attack or an attempt at information disclosure.');
-
-      case CheckResult::INFO:
-        return $this->t('Module dblog is not enabled.');
 
       default:
         return $this->t('Unexpected result.');
