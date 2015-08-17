@@ -5,6 +5,10 @@
  * Defines the API for Security Review.
  */
 
+/*
+use Drupal\mymodule\MyCheck;
+use Drupal\mymodule\MyOtherCheck;
+ */
 use Drupal\security_review\Check;
 
 /**
@@ -13,15 +17,16 @@ use Drupal\security_review\Check;
  * The checks must extend \Drupal\security_review\Check.
  *
  * @return array
- *   An array of checks.
+ *   An array of security checks.
  */
 function hook_security_review_checks() {
-  // Instances of the defined Checks.
-  return array(/*
-    MyCheck::getInstance(),
-    MyOtherCheck::getInstance(),
+  // Return instances of the defined Checks.
+  return [
+    /*
+    new MyCheck(),
+    new MyOtherCheck(),
     */
-  );
+  ];
 }
 
 /**

@@ -210,7 +210,7 @@ abstract class Check {
    *   The render array of the evaluation page.
    */
   public function evaluate(CheckResult $result) {
-    return array();
+    return [];
   }
 
   /**
@@ -249,28 +249,33 @@ abstract class Check {
    *   The last stored result (or null).
    */
   public function lastResult($get_findings = FALSE) {
+    // Get stored data from State system.
     $state_prefix = $this->statePrefix . 'last_result.';
     $result = $this->state->get($state_prefix . 'result');
     if ($get_findings) {
       $findings = $this->state->get($state_prefix . 'findings');
     }
     else {
-      $findings = array();
+      $findings = [];
     }
     $time = $this->state->get($state_prefix . 'time');
 
+    // Check validity of stored data.
     $valid_result = is_int($result)
       && $result >= CheckResult::SUCCESS
       && $result <= CheckResult::HIDE;
     $valid_findings = is_array($findings);
     $valid_time = is_int($time) && $time > 0;
 
+    // If invalid, return NULL.
     if (!$valid_result || !$valid_findings || !$valid_time) {
       return NULL;
     }
 
+    // Construct the CheckResult.
     $last_result = new CheckResult($this, $result, $findings, $time);
 
+    // Do a check run for acquiring findings if required.
     if ($get_findings && !$this->storesFindings()) {
       // Run the check to get the findings.
       $fresh_result = $this->run();
@@ -372,7 +377,7 @@ abstract class Check {
       $this->config->save();
 
       // Log.
-      $context = array('!name' => $this->getTitle());
+      $context = ['!name' => $this->getTitle()];
       $this->securityReview()->log($this, '!name check no longer skipped', $context, RfcLogLevel::NOTICE);
     }
   }
@@ -385,13 +390,14 @@ abstract class Check {
    */
   public function skip() {
     if (!$this->isSkipped()) {
+      // Store skip data.
       $this->config->set('skipped', TRUE);
       $this->config->set('skipped_by', $this->currentUser()->id());
       $this->config->set('skipped_on', time());
       $this->config->save();
 
       // Log.
-      $context = array('!name' => $this->getTitle());
+      $context = ['!name' => $this->getTitle()];
       $this->securityReview()->log($this, '!name check skipped', $context, RfcLogLevel::NOTICE);
     }
   }
@@ -402,22 +408,22 @@ abstract class Check {
    * @param \Drupal\security_review\CheckResult $result
    *   The result to store.
    */
-  public function storeResult(CheckResult $result = NULL) {
+  public function storeResult(CheckResult $result) {
     if ($result == NULL) {
-      $context = array(
+      $context = [
         '!reviewcheck' => $this->getTitle(),
         '!namespace' => $this->getNamespace(),
-      );
+      ];
       $this->securityReview()->log($this, 'Unable to store check !reviewcheck for !namespace', $context, RfcLogLevel::CRITICAL);
       return;
     }
 
-    $findings = $this->storesFindings() ? $result->findings() : array();
-    $this->state->setMultiple(array(
+    $findings = $this->storesFindings() ? $result->findings() : [];
+    $this->state->setMultiple([
       $this->statePrefix . 'last_result.result' => $result->result(),
       $this->statePrefix . 'last_result.time' => $result->time(),
       $this->statePrefix . 'last_result.findings' => $findings,
-    ));
+    ]);
   }
 
   /**
@@ -433,7 +439,7 @@ abstract class Check {
    * @return \Drupal\security_review\CheckResult
    *   The created CheckResult.
    */
-  public function createResult($result, array $findings = array(), $time = NULL) {
+  public function createResult($result, array $findings = [], $time = NULL) {
     return new CheckResult($this, $result, $findings, $time);
   }
 

@@ -90,7 +90,7 @@ class SettingsForm extends ConfigFormBase {
 
     // Get the user roles.
     $roles = user_roles();
-    $options = array();
+    $options = [];
     foreach ($roles as $rid => $role) {
       $options[$rid] = SafeMarkup::checkPlain($role->label());
     }
@@ -102,56 +102,59 @@ class SettingsForm extends ConfigFormBase {
     }
 
     // Show the untrusted roles form element.
-    $form['untrusted_roles'] = array(
+    $form['untrusted_roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Untrusted roles'),
-      '#description' => $this->t('Define which roles are for less trusted users. The anonymous role defaults to untrusted. @message Most Security Review checks look for resources usable by untrusted roles.',
-        array(
-          '@message' => $message,
-        )),
+      '#description' => $this->t(
+        'Define which roles are for less trusted users. The anonymous role defaults to untrusted. @message Most Security Review checks look for resources usable by untrusted roles.',
+        ['@message' => $message]
+      ),
       '#options' => $options,
       '#default_value' => $this->security->untrustedRoles(),
-    );
+    ];
 
-    $form['advanced'] = array(
+    $form['advanced'] = [
       '#type' => 'details',
       '#title' => $this->t('Advanced'),
       '#open' => TRUE,
-    );
+    ];
 
     // Show the logging setting.
-    $form['advanced']['logging'] = array(
+    $form['advanced']['logging'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Log checklist results and skips'),
       '#description' => $this->t('The result of each check and skip can be logged to watchdog for tracking.'),
       '#default_value' => $this->securityReview->isLogging(),
-    );
+    ];
 
     // Skipped checks.
-    $values = array();
-    $options = array();
+    $values = [];
+    $options = [];
     foreach ($checks as $check) {
       // Determine if check is being skipped.
       if ($check->isSkipped()) {
         $values[] = $check->id();
-        $label = $this->t('!name <em>skipped by UID !uid on !date</em>', array(
-          '!name' => $check->getTitle(),
-          '!uid' => $check->skippedBy()->id(),
-          '!date' => format_date($check->skippedOn()),
-        ));
+        $label = $this->t(
+          '@name <em>skipped by UID @uid on @date</em>',
+          [
+            '@name' => $check->getTitle(),
+            '@uid' => $check->skippedBy()->id(),
+            '@date' => format_date($check->skippedOn()),
+          ]
+        );
       }
       else {
         $label = $check->getTitle();
       }
       $options[$check->id()] = $label;
     }
-    $form['advanced']['skip'] = array(
+    $form['advanced']['skip'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Checks to skip'),
       '#description' => $this->t('Skip running certain checks. This can also be set on the <em>Run & review</em> page. It is recommended that you do not skip any checks unless you know the result is wrong or the process times out while running.'),
       '#options' => $options,
       '#default_value' => $values,
-    );
+    ];
 
     // Iterate through checklist and get check-specific setting pages.
     foreach ($checks as $check) {
@@ -162,31 +165,31 @@ class SettingsForm extends ConfigFormBase {
       if (!empty($check_form)) {
         // If this is the first non-empty setting page initialize the 'details'
         if (!isset($form['advanced']['check_specific'])) {
-          $form['advanced']['check_specific'] = array(
+          $form['advanced']['check_specific'] = [
             '#type' => 'details',
             '#title' => $this->t('Check-specific settings'),
             '#open' => FALSE,
             '#tree' => TRUE,
-          );
+          ];
         }
 
         // Add the form.
         $sub_form = &$form['advanced']['check_specific'][$check->id()];
 
         $title = $check->getTitle();
-        // If it's an external check, tell the user its namespace.
+        // If it's an external check, show its namespace.
         if ($check->getMachineNamespace() != 'security_review') {
-          $title .= $this->t('<em>%namespace</em>', array(
+          $title .= $this->t('%namespace', [
             '%namespace' => $check->getNamespace(),
-          ));
+          ]);
         }
-        $sub_form = array(
+        $sub_form = [
           '#type' => 'details',
           '#title' => $title,
           '#open' => TRUE,
           '#tree' => TRUE,
           'form' => $check_form,
-        );
+        ];
       }
     }
 
@@ -198,6 +201,7 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Run validation for check-specific settings.
     if (isset($form['advanced']['check_specific'])) {
       $check_specific_values = $form_state->getValue('check_specific');
       foreach ($this->checklist->getChecks() as $check) {

@@ -48,6 +48,8 @@ class ToggleController extends ControllerBase {
    *   The CSRF Token generator.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request
    *   The request stack.
+   * @param \Drupal\security_review\Checklist $checklist
+   *   The security_review.checklist service.
    */
   public function __construct(CsrfTokenGenerator $csrf_token_generator, RequestStack $request, Checklist $checklist) {
     $this->checklist = $checklist;
@@ -82,6 +84,7 @@ class ToggleController extends ControllerBase {
     // Validate token.
     $token = $this->request->query->get('token');
     if ($this->csrfToken->validate($token, $check_id)) {
+      // Toggle.
       $check = $this->checklist->getCheckById($check_id);
       if ($check != NULL) {
         if ($check->isSkipped()) {
@@ -91,35 +94,36 @@ class ToggleController extends ControllerBase {
           $check->skip();
         }
       }
+
       // Output.
       if ($ajax) {
-        return new JsonResponse(array(
+        return new JsonResponse([
           'skipped' => $check->isSkipped(),
           'toggle_text' => $check->isSkipped() ? $this->t('Enable') : $this->t('Skip'),
           'toggle_href' => Url::fromRoute(
             'security_review.toggle',
-            array('check_id' => $check->id()),
-            array(
-              'query' => array(
+            ['check_id' => $check->id()],
+            [
+              'query' => [
                 'token' => $this->csrfToken->get($check->id()),
                 'js' => 1,
-              ),
-            )
+              ],
+            ]
           ),
-        ));
+        ]);
       }
       else {
         // Set message.
         if ($check->isSkipped()) {
           drupal_set_message($this->t(
-            '%name check skipped.',
-            array('%name' => $check->getTitle())
+            '@name check skipped.',
+            ['@name' => $check->getTitle()]
           ));
         }
         else {
           drupal_set_message($this->t(
-            '%name check no longer skipped.',
-            array('%name' => $check->getTitle())
+            '@name check no longer skipped.',
+            ['@name' => $check->getTitle()]
           ));
         }
 

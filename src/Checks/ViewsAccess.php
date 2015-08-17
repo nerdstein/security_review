@@ -7,7 +7,6 @@
 
 namespace Drupal\security_review\Checks;
 
-use Drupal;
 use Drupal\Core\Url;
 use Drupal\security_review\Check;
 use Drupal\security_review\CheckResult;
@@ -42,16 +41,18 @@ class ViewsAccess extends Check {
     }
 
     $result = CheckResult::SUCCESS;
-    $findings = array();
+    $findings = [];
 
-    $views = entity_load_multiple('view');
+    $views = View::loadMultiple();
     /** @var View[] $views */
 
+    // Iterate through views and their displays.
     foreach ($views as $view) {
       if ($view->status()) {
         foreach ($view->get('display') as $display_name => $display) {
           $access = &$display['display_options']['access'];
           if (isset($access) && $access['type'] == 'none') {
+            // Access is not controlled for this display.
             $findings[$view->id()][] = $display_name;
           }
         }
@@ -69,14 +70,14 @@ class ViewsAccess extends Check {
    * {@inheritdoc}
    */
   public function help() {
-    $paragraphs = array();
+    $paragraphs = [];
     $paragraphs[] = $this->t("Views can check if the user is allowed access to the content. It is recommended that all Views implement some amount of access control, at a minimum checking for the permission 'access content'.");
 
-    return array(
+    return [
       '#theme' => 'check_help',
       '#title' => $this->t('Views access'),
       '#paragraphs' => $paragraphs,
-    );
+    ];
   }
 
   /**
@@ -85,34 +86,36 @@ class ViewsAccess extends Check {
   public function evaluate(CheckResult $result) {
     $findings = $result->findings();
     if (empty($findings)) {
-      return array();
+      return [];
     }
 
-    $paragraphs = array();
+    $paragraphs = [];
     $paragraphs[] = $this->t('The following View displays do not check access.');
 
-    $items = array();
+    $items = [];
     foreach ($findings as $view_id => $displays) {
-      $view = entity_load('view', $view_id);
+      $view = View::load($view_id);
+      /** @var View $view */
+
       foreach ($displays as $display) {
         $items[] = $this->l(
           $view->label() . ': ' . $display,
           Url::fromRoute(
             'entity.view.edit_display_form',
-            array(
+            [
               'view' => $view_id,
               'display_id' => $display,
-            )
+            ]
           )
         );
       }
     }
 
-    return array(
+    return [
       '#theme' => 'check_evaluation',
       '#paragraphs' => $paragraphs,
       '#items' => $items,
-    );
+    ];
   }
 
   /**

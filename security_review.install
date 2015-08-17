@@ -16,7 +16,7 @@ function security_review_install() {
   drupal_set_message(
     t(
       'Security Review module enabled. You should first set the module access permissions at !link. Be sure to grant permissions to trusted users only as this module can show sensitive site information.',
-      array('!link' => Drupal::l('admin/people/permissions', Url::fromRoute('user.admin_permissions')))
+      ['!link' => Drupal::l('admin/people/permissions', Url::fromRoute('user.admin_permissions'))]
     )
   );
 }
@@ -25,8 +25,9 @@ function security_review_install() {
  * Implements hook_requirements().
  */
 function security_review_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
 
+  // Provides a Status Report entry.
   if ($phase == 'runtime') {
     /** @var \Drupal\security_review\Checklist $checklist */
     $checklist = Drupal::service('security_review.checklist');
@@ -34,6 +35,7 @@ function security_review_requirements($phase) {
     $failed_checks = FALSE;
     $no_results = TRUE;
 
+    // Looks for failed checks.
     foreach ($checklist->getEnabledChecks() as $check) {
       $result = $check->lastResult();
       if ($result instanceof CheckResult) {
@@ -45,33 +47,33 @@ function security_review_requirements($phase) {
       }
     }
 
-    $url = Url::fromRoute('security_review');
+    $module_url = Url::fromRoute('security_review');
     if ($no_results) {
       $severity = REQUIREMENT_WARNING;
       $value = t(
         'The Security Review checklist has not been run. !link',
-        array('!link' => Drupal::l('Run the checklist', $url))
+        ['!link' => Drupal::l(t('Run the checklist'), $module_url)]
       );
     }
     elseif ($failed_checks) {
       $severity = REQUIREMENT_WARNING;
       $value = t(
         'There are failed Security Review checks. !link',
-        array('!link' => Drupal::l('Review the checklist', $url))
+        ['!link' => Drupal::l(t('Review the checklist'), $module_url)]
       );
     }
     else {
       $severity = REQUIREMENT_OK;
       $value = t(
         'Passing all non-ignored Security Review checks. !link',
-        array('!link' => Drupal::l('Review the checklist', $url))
+        ['!link' => Drupal::l(t('Review the checklist'), $module_url)]
       );
     }
-    $requirements['security_review'] = array(
+    $requirements['security_review'] = [
       'title' => t('Security Review'),
       'severity' => $severity,
       'value' => $value,
-    );
+    ];
   }
 
   return $requirements;
