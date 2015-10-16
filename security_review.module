@@ -125,7 +125,7 @@ function template_preprocess_run_and_review(&$variables) {
   $variables['icons'] = [
     'success' => $icons_root . '73b355/check.svg',
     'warning' => $icons_root . 'e29700/warning.svg',
-    'fail' => $icons_root . 'ea2800/error.svg',
+    'fail' => $icons_root . 'e32700/error.svg',
   ];
 
   // Generate full URLs.
