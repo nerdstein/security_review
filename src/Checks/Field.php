@@ -143,14 +143,12 @@ class Field extends Check {
             $url = $entity->urlInfo();
           }
           $items[] = $this->t(
-            '@vulnerabilities found in <em>@field</em> field of !link',
+            '@vulnerabilities found in <em>@field</em> field of <a href=":url">@label</a>',
             [
               '@vulnerabilities' => implode(' and ', $finding),
               '@field' => $field,
-              '!link' => $this->l(
-                $entity->label(),
-                $url
-              ),
+              '@label' => $entity->label(),
+              ':url' => $url,
             ]
           );
         }
@@ -186,11 +184,11 @@ class Field extends Check {
             $url = $entity->url();
           }
           $output .= "\t" . $this->t(
-              '@vulnerabilities in @field of !link',
+              '@vulnerabilities in @field of :link',
               [
                 '@vulnerabilities' => implode(' and ', $finding),
                 '@field' => $field,
-                '!link' => $url->toString(),
+                ':link' => $url->toString(),
               ]
             ) . "\n";
         }

@@ -17,6 +17,9 @@ security_review.settings:
     last_run:
       type: integer
       label: 'Last run'
+    langcode:
+      type: string
+      label: 'Language code'
 
 # Defines a security check's skip informations and settings.
 security_review.check.*:
@@ -38,6 +41,9 @@ security_review.check.*:
       # Checks that need storage for settings are advised to define their settings schema.
       # This way type-strict per-check settings storage can be created.
       type: security_review.check_settings.[%parent.id]
+    langcode:
+      type: string
+      label: 'Language code'
 
 # Setting storage for Base URL check.
 security_review.check_settings.security_review-base_url_set:

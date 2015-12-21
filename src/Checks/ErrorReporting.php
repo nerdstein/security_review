@@ -94,8 +94,8 @@ class ErrorReporting extends Check {
     }
 
     if (isset($result->findings()['level'])) {
-      return $this->t('Error level: !level', [
-        '!level' => $result->findings()['level'],
+      return $this->t('Error level: @level', [
+        '@level' => $result->findings()['level'],
       ]);
     }
     return '';

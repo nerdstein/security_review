@@ -79,13 +79,8 @@ class UploadExtensions extends Check {
   public function help() {
     $paragraphs = [];
     $paragraphs[] = $this->t(
-      'File and image fields allow for uploaded files. Some extensions are considered dangerous because the files can be evaluated and then executed in the browser. A malicious user could use this opening to gain control of your site. Review !fields_report.',
-      [
-        '!fields_report' => $this->l(
-          'all fields on your site',
-          Url::fromRoute('entity.field_storage_config.collection')
-        ),
-      ]
+      'File and image fields allow for uploaded files. Some extensions are considered dangerous because the files can be evaluated and then executed in the browser. A malicious user could use this opening to gain control of your site. Review <a href=":url">all fields on your site</a>.',
+      [':url' => Url::fromRoute('entity.field_storage_config.collection')->toString()]
     );
 
     return [
@@ -162,10 +157,10 @@ class UploadExtensions extends Check {
       /** @var FieldConfig $entity */
 
       $output .= $this->t(
-        '!bundle: field !field',
+        '@bundle: field @field',
         [
-          '!bundle' => $entity->getTargetBundle(),
-          '!field' => $entity->label(),
+          '@bundle' => $entity->getTargetBundle(),
+          '@field' => $entity->label(),
         ]
       );
       $output .= "\n\t" . implode(', ', $unsafe_extensions) . "\n";

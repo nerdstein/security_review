@@ -377,8 +377,8 @@ abstract class Check {
       $this->config->save();
 
       // Log.
-      $context = ['!name' => $this->getTitle()];
-      $this->securityReview()->log($this, '!name check no longer skipped', $context, RfcLogLevel::NOTICE);
+      $context = ['@name' => $this->getTitle()];
+      $this->securityReview()->log($this, '@name check no longer skipped', $context, RfcLogLevel::NOTICE);
     }
   }
 
@@ -397,8 +397,8 @@ abstract class Check {
       $this->config->save();
 
       // Log.
-      $context = ['!name' => $this->getTitle()];
-      $this->securityReview()->log($this, '!name check skipped', $context, RfcLogLevel::NOTICE);
+      $context = ['@name' => $this->getTitle()];
+      $this->securityReview()->log($this, '@name check skipped', $context, RfcLogLevel::NOTICE);
     }
   }
 
@@ -411,10 +411,10 @@ abstract class Check {
   public function storeResult(CheckResult $result) {
     if ($result == NULL) {
       $context = [
-        '!reviewcheck' => $this->getTitle(),
-        '!namespace' => $this->getNamespace(),
+        '@reviewcheck' => $this->getTitle(),
+        '@namespace' => $this->getNamespace(),
       ];
-      $this->securityReview()->log($this, 'Unable to store check !reviewcheck for !namespace', $context, RfcLogLevel::CRITICAL);
+      $this->securityReview()->log($this, 'Unable to store check @reviewcheck for @namespace', $context, RfcLogLevel::CRITICAL);
       return;
     }
 

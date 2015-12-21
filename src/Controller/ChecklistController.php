@@ -94,8 +94,8 @@ class ChecklistController extends ControllerBase {
     if ($this->securityReview->getLastRun() <= 0) {
       // If they haven't configured the site, prompt them to do so.
       if (!$this->securityReview->isConfigured()) {
-        drupal_set_message($this->t('It appears this is your first time using the Security Review checklist. Before running the checklist please review the settings page at !link to set which roles are untrusted.',
-          ['!link' => $this->l('admin/reports/security-review/settings', Url::fromRoute('security_review.settings'))]
+        drupal_set_message($this->t('It appears this is your first time using the Security Review checklist. Before running the checklist please review the settings page at <a href=":url">admin/reports/security-review/settings</a> to set which roles are untrusted.',
+          [':url' => Url::fromRoute('security_review.settings')->toString()]
         ), 'warning');
       }
     }
@@ -121,8 +121,8 @@ class ChecklistController extends ControllerBase {
       $check_info = [
         'result' => CheckResult::SKIPPED,
         'message' => $this->t(
-          'The check "!name" hasn\'t been run yet.',
-          ['!name' => $check->getTitle()]
+          'The check "@name" hasn\'t been run yet.',
+          ['@name' => $check->getTitle()]
         ),
         'skipped' => $check->isSkipped(),
       ];

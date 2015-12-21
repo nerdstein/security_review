@@ -90,17 +90,8 @@ class HelpController extends ControllerBase {
 
     // Print the general help.
     $paragraphs[] = $this->t('You should take the security of your site very seriously. Fortunately, Drupal is fairly secure by default. The Security Review module automates many of the easy-to-make mistakes that render your site insecure, however it does not automatically make your site impenetrable. You should give care to what modules you install and how you configure your site and server. Be mindful of who visits your site and what features you expose for their use.');
-    $paragraphs[] = $this->t(
-      'You can read more about securing your site in the !drupal_org and on !cracking_drupal. There are also additional modules you can install to secure or protect your site. Be aware though that the more modules you have running on your site the greater (usually) attack area you expose.',
-      [
-        '!drupal_org' => $this->l('drupal.org handbooks', Url::fromUri('http://drupal.org/security/secure-configuration')),
-        '!cracking_drupal' => $this->l('CrackingDrupal.com', Url::fromUri('http://crackingdrupal.com')),
-      ]
-    );
-    $paragraphs[] = $this->l(
-      $this->t('Drupal.org Handbook: Introduction to security-related contrib modules'),
-      Url::fromUri('http://drupal.org/node/382752')
-    );
+    $paragraphs[] = $this->t('You can read more about securing your site in the <a href="http://drupal.org/security/secure-configuration">drupal.org handbooks</a> and on <a href="http://crackingdrupal.com">CrackingDrupal.com</a>. There are also additional modules you can install to secure or protect your site. Be aware though that the more modules you have running on your site the greater (usually) attack area you expose.');
+    $paragraphs[] = $this->t('<a href="http://drupal.org/node/382752">Drupal.org Handbook: Introduction to security-related contrib modules</a>');
 
     // Print the list of security checks with links to their help pages.
     $checks = [];
@@ -173,10 +164,10 @@ class HelpController extends ControllerBase {
       }
 
       $skip_message = $this->t(
-        'Check marked for skipping on !date by !user',
+        'Check marked for skipping on @date by @user',
         [
-          '!date' => format_date($check->skippedOn()),
-          '!user' => $user,
+          '@date' => format_date($check->skippedOn()),
+          '@user' => $user,
         ]
       );
 

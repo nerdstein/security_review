@@ -220,10 +220,10 @@ class SecurityReview {
       if ($result == NULL) {
         $check = $result->check();
         $context = [
-          '!check' => $check->getTitle(),
-          '!namespace' => $check->getNamespace(),
+          '@check' => $check->getTitle(),
+          '@namespace' => $check->getNamespace(),
         ];
-        $this->log($check, '!check of !namespace produced a null result', $context, RfcLogLevel::CRITICAL);
+        $this->log($check, '@check of @namespace produced a null result', $context, RfcLogLevel::CRITICAL);
         return;
       }
 
@@ -231,36 +231,36 @@ class SecurityReview {
 
       // Fallback log message.
       $level = RfcLogLevel::NOTICE;
-      $message = '!name check invalid result';
+      $message = '@name check invalid result';
 
       // Set log message and level according to result.
       switch ($result->result()) {
         case CheckResult::SUCCESS:
           $level = RfcLogLevel::INFO;
-          $message = '!name check succeeded';
+          $message = '@name check succeeded';
           break;
 
         case CheckResult::FAIL:
           $level = RfcLogLevel::ERROR;
-          $message = '!name check failed';
+          $message = '@name check failed';
           break;
 
         case CheckResult::WARN:
           $level = RfcLogLevel::WARNING;
-          $message = '!name check raised a warning';
+          $message = '@name check raised a warning';
           break;
 
         case CheckResult::INFO:
           $level = RfcLogLevel::INFO;
-          $message = '!name check returned info';
+          $message = '@name check returned info';
           break;
 
         case CheckResult::HIDE:
-          $message = '!name check\'s result hidden';
+          $message = '@name check\'s result hidden';
           break;
       }
 
-      $context = ['!name' => $check->getTitle()];
+      $context = ['@name' => $check->getTitle()];
       $this->log($check, $message, $context, $level);
     }
   }

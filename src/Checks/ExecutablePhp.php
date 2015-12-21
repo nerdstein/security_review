@@ -137,15 +137,7 @@ class ExecutablePhp extends Check {
   public function help() {
     $paragraphs = [];
     $paragraphs[] = $this->t('The Drupal files directory is for user-uploaded files and by default provides some protection against a malicious user executing arbitrary PHP code against your site.');
-    $paragraphs[] = $this->t(
-      'Read more about the !risks.',
-      [
-        '!risks' => $this->l(
-          'risk of PHP code execution on Drupal.org',
-          Url::fromUri('https://drupal.org/node/615888')
-        ),
-      ]
-    );
+    $paragraphs[] = $this->t('Read more about the <a href="https://drupal.org/node/615888">risk of PHP code execution on Drupal.org</a>.');
 
     return [
       '#theme' => 'check_help',
@@ -167,7 +159,7 @@ class ExecutablePhp extends Check {
 
         case 'missing_htaccess':
           $directory = PublicStream::basePath();
-          $paragraphs[] = $this->t("The .htaccess file is missing from the files directory at !path", ['!path' => $directory]);
+          $paragraphs[] = $this->t("The .htaccess file is missing from the files directory at @path", ['@path' => $directory]);
           $paragraphs[] = $this->t("Note, if you are using a webserver other than Apache you should consult your server's documentation on how to limit the execution of PHP scripts in this directory.");
           break;
 
@@ -197,11 +189,11 @@ class ExecutablePhp extends Check {
     foreach ($result->findings() as $label) {
       switch ($label) {
         case 'executable_php':
-          $paragraphs[] = $this->t('PHP file executed in !path', ['!path' => $directory]);
+          $paragraphs[] = $this->t('PHP file executed in @path', ['@path' => $directory]);
           break;
 
         case 'missing_htaccess':
-          $paragraphs[] = $this->t('.htaccess is missing from !path', ['!path' => $directory]);
+          $paragraphs[] = $this->t('.htaccess is missing from @path', ['@path' => $directory]);
           break;
 
         case 'incorrect_htaccess':

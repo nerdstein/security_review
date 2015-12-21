@@ -95,7 +95,7 @@ class PrivateFiles extends Check {
       return '';
     }
 
-    return $this->t('Private files directory: !path', ['!path' => $result->findings()['path']]);
+    return $this->t('Private files directory: @path', ['@path' => $result->findings()['path']]);
   }
 
   /**

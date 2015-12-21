@@ -91,9 +91,9 @@ class AdminPermissions extends Check {
       /** @var Role $role */
       $paragraphs = [];
       $paragraphs[] = $this->t(
-        "!role has the following restricted permissions:",
+        "@role has the following restricted permissions:",
         [
-          '!role' => $this->l(
+          '@role' => $this->l(
             $role->label(),
             Url::fromRoute(
               'entity.user_role.edit_permissions_form',
@@ -124,10 +124,10 @@ class AdminPermissions extends Check {
       /** @var Role $role */
 
       $output .= $this->t(
-        '!role has !permissions',
+        '@role has @permissions',
         [
-          '!role' => $role->label(),
-          '!permissions' => implode(', ', $permissions),
+          '@role' => $role->label(),
+          '@permissions' => implode(', ', $permissions),
         ]
       );
       $output .= "\n";
