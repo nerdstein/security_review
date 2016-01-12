@@ -47,7 +47,7 @@ function security_review_requirements($phase) {
       }
     }
 
-    $module_url = Url::fromRoute('security_review');
+    $module_url = Url::fromRoute('security_review')->toString();
     if ($no_results) {
       $severity = REQUIREMENT_WARNING;
       $value = t(

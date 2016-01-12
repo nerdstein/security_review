@@ -109,7 +109,7 @@ class ToggleController extends ControllerBase {
                 'js' => 1,
               ],
             ]
-          ),
+          )->toString(),
         ]);
       }
       else {
