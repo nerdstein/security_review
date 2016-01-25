@@ -119,7 +119,6 @@ class ChecklistController extends ControllerBase {
     foreach ($this->checklist->getChecks() as $check) {
       // Initialize with defaults.
       $check_info = [
-        'result' => CheckResult::SKIPPED,
         'message' => $this->t(
           'The check "@name" hasn\'t been run yet.',
           ['@name' => $check->getTitle()]

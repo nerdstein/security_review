@@ -30,7 +30,10 @@
 <table class="security-review-run-and-review__table">
     <tbody>
     {% for check in checks %}
-        {% set style = ' ' ~ check.result %}
+        {% set style = '' %}
+        {% if check.result is defined %}
+            {% set style = style ~ ' ' ~ check.result %}
+        {% endif %}
         {% if check.skipped %}
             {% set style = style ~ ' skipped' %}
         {% endif %}

@@ -78,7 +78,6 @@ https://www.drupal.org/node/2508415
           * CheckResult::WARN     - for a check that only raised a warning
           * CheckResult::INFO     - general result for providing information
           * CheckResult::HIDE     - for a check result that should not be shown
-          * Do NOT use the SKIPPED constant! It's reserved for internal usage.
       * $findings
         An array of findings that can be evaluated. It can be empty.
       * $time

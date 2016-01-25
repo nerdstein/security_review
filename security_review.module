@@ -139,22 +139,24 @@ function template_preprocess_run_and_review(&$variables) {
 
   // Convert check result integers to strings.
   foreach ($variables['checks'] as &$check) {
-    switch ($check['result']) {
-      case CheckResult::SUCCESS:
-        $check['result'] = 'success';
-        break;
+    if (isset($check['result'])) {
+      switch ($check['result']) {
+        case CheckResult::SUCCESS:
+          $check['result'] = 'success';
+          break;
 
-      case CheckResult::FAIL:
-        $check['result'] = 'fail';
-        break;
+        case CheckResult::FAIL:
+          $check['result'] = 'fail';
+          break;
 
-      case CheckResult::WARN:
-        $check['result'] = 'warning';
-        break;
+        case CheckResult::WARN:
+          $check['result'] = 'warning';
+          break;
 
-      case CheckResult::INFO:
-        $check['result'] = 'info';
-        break;
+        case CheckResult::INFO:
+          $check['result'] = 'info';
+          break;
+      }
     }
   }
 }

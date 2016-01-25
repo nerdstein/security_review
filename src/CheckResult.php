@@ -12,7 +12,6 @@ namespace Drupal\security_review;
  */
 class CheckResult {
 
-  const SKIPPED = -1;
   const SUCCESS = 0;
   const FAIL = 1;
   const WARN = 2;
