@@ -125,7 +125,8 @@ class CheckTest extends KernelTestBase {
         $new_result = new CheckResult(
           $check,
           $new_result_result,
-          []
+          [],
+          TRUE
         );
 
         // Store it.

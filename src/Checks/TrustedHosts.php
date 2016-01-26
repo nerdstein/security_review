@@ -50,7 +50,7 @@ class TrustedHosts extends Check {
     $settings_php = $this->security()->sitePath() . '/settings.php';
 
     if (!file_exists($settings_php)) {
-      return $this->createResult(CheckResult::HIDE);
+      return $this->createResult(CheckResult::INFO, [], FALSE);
     }
 
     if ($this->settings()->get('method', 'token') === 'token') {

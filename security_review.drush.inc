@@ -188,6 +188,11 @@ function _security_review_drush_get_check($check_name) {
 function _security_review_drush_print_results(array $results, $short_titles = FALSE, $show_findings = FALSE) {
   foreach ($results as $result) {
     if ($result instanceof CheckResult) {
+      if (!$result->isVisible()) {
+        // Continue with the next check.
+        continue;
+      }
+
       $check = $result->check();
       $message = $short_titles ? $check->getTitle() : $result->resultMessage();
       $status = 'notice';
@@ -209,10 +214,6 @@ function _security_review_drush_print_results(array $results, $short_titles = FA
         case CheckResult::INFO:
           $status = 'info';
           break;
-
-        case CheckResult::HIDE:
-          // Continue with the next check.
-          continue 2;
       }
 
       // Attach findings.

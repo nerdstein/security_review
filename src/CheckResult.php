@@ -16,7 +16,6 @@ class CheckResult {
   const FAIL = 1;
   const WARN = 2;
   const INFO = 3;
-  const HIDE = 4;
 
   /**
    * Stores the parent Check.
@@ -47,6 +46,13 @@ class CheckResult {
   private $time;
 
   /**
+   * Whether the result should be shown on the UI.
+   *
+   * @var bool $visible
+   */
+  private $visible;
+
+  /**
    * Constructs an immutable CheckResult.
    *
    * @param \Drupal\security_review\Check $check
@@ -57,20 +63,25 @@ class CheckResult {
    *   The findings.
    * @param int $time
    *   The timestamp of the check run.
+   * @param bool $visible
+   *   The visibility of the result.
    */
-  public function __construct(Check $check, $result, array $findings, $time = NULL) {
+  public function __construct(Check $check, $result, array $findings, $visible = TRUE, $time = NULL) {
     // Set the parent check.
     $this->check = $check;
 
     // Set the result value.
     $result = intval($result);
-    if ($result < self::SUCCESS || $result > self::HIDE) {
+    if ($result < self::SUCCESS || $result > self::INFO) {
       $result = self::INFO;
     }
     $this->result = $result;
 
     // Set the findings.
     $this->findings = $findings;
+
+    // Set the visibility.
+    $this->visible = $visible;
 
     // Set the timestamp.
     if (!is_int($time)) {
@@ -96,7 +107,7 @@ class CheckResult {
    *   The combined result.
    */
   public static function combine(CheckResult $old, CheckResult $fresh) {
-    return new CheckResult($old->check, $old->result, $fresh->findings, $old->time);
+    return new CheckResult($old->check, $old->result, $fresh->findings, $old->visible, $old->time);
   }
 
   /**
@@ -137,6 +148,16 @@ class CheckResult {
    */
   public function time() {
     return $this->time;
+  }
+
+  /**
+   * Returns the visibility of the result.
+   *
+   * @return bool
+   *   Whether the result should be shown on the UI.
+   */
+  public function isVisible() {
+    return $this->visible;
   }
 
   /**

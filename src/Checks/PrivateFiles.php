@@ -36,9 +36,11 @@ class PrivateFiles extends Check {
    */
   public function run() {
     $file_directory_path = PrivateStream::basePath();
+    $visible = TRUE;
     if (empty($file_directory_path)) {
       // Private files feature is not enabled.
-      $result = CheckResult::HIDE;
+      $result = CheckResult::SUCCESS;
+      $visible = FALSE;
     }
     elseif (strpos(realpath($file_directory_path), DRUPAL_ROOT) === 0) {
       // Path begins at root.
@@ -48,7 +50,7 @@ class PrivateFiles extends Check {
       // The private files directory is placed correctly.
       $result = CheckResult::SUCCESS;
     }
-    return $this->createResult($result, ['path' => $file_directory_path]);
+    return $this->createResult($result, ['path' => $file_directory_path], $visible);
   }
 
   /**

@@ -254,10 +254,6 @@ class SecurityReview {
           $level = RfcLogLevel::INFO;
           $message = '@name check returned info';
           break;
-
-        case CheckResult::HIDE:
-          $message = '@name check\'s result hidden';
-          break;
       }
 
       $context = ['@name' => $check->getTitle()];

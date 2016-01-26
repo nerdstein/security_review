@@ -34,14 +34,15 @@ class FailedLogins extends Check {
    * {@inheritdoc}
    */
   public function run() {
-    // If dblog is not enabled return with HIDE.
+    // If dblog is not enabled return with hidden INFO.
     if (!$this->moduleHandler()->moduleExists('dblog')) {
-      return $this->createResult(CheckResult::HIDE);
+      return $this->createResult(CheckResult::INFO, [], FALSE);
     }
 
-    $result = CheckResult::HIDE;
+    $result = CheckResult::SUCCESS;
     $findings = [];
     $last_result = $this->lastResult();
+    $visible = FALSE;
 
     // Prepare the query.
     $query = $this->database()->select('watchdog', 'w');
@@ -87,9 +88,10 @@ class FailedLogins extends Check {
 
     if (!empty($findings)) {
       $result = CheckResult::FAIL;
+      $visible = TRUE;
     }
 
-    return $this->createResult($result, $findings);
+    return $this->createResult($result, $findings, $visible);
   }
 
   /**

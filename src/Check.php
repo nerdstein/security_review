@@ -259,11 +259,13 @@ abstract class Check {
       $findings = [];
     }
     $time = $this->state->get($state_prefix . 'time');
+    // Force boolean value.
+    $visible = $this->state->get($state_prefix . 'visible') == TRUE;
 
     // Check validity of stored data.
     $valid_result = is_int($result)
       && $result >= CheckResult::SUCCESS
-      && $result <= CheckResult::HIDE;
+      && $result <= CheckResult::INFO;
     $valid_findings = is_array($findings);
     $valid_time = is_int($time) && $time > 0;
 
@@ -273,7 +275,7 @@ abstract class Check {
     }
 
     // Construct the CheckResult.
-    $last_result = new CheckResult($this, $result, $findings, $time);
+    $last_result = new CheckResult($this, $result, $findings, $visible, $time);
 
     // Do a check run for acquiring findings if required.
     if ($get_findings && !$this->storesFindings()) {
@@ -422,6 +424,7 @@ abstract class Check {
     $this->state->setMultiple([
       $this->statePrefix . 'last_result.result' => $result->result(),
       $this->statePrefix . 'last_result.time' => $result->time(),
+      $this->statePrefix . 'last_result.visible' => $result->isVisible(),
       $this->statePrefix . 'last_result.findings' => $findings,
     ]);
   }
@@ -433,14 +436,16 @@ abstract class Check {
    *   The result integer (see the constants defined in CheckResult).
    * @param array $findings
    *   The findings.
+   * @param bool $visible
+   *   The visibility of the result.
    * @param int $time
    *   The time the test was run.
    *
    * @return \Drupal\security_review\CheckResult
    *   The created CheckResult.
    */
-  public function createResult($result, array $findings = [], $time = NULL) {
-    return new CheckResult($this, $result, $findings, $time);
+  public function createResult($result, array $findings = [], $visible = TRUE, $time = NULL) {
+    return new CheckResult($this, $result, $findings, $visible, $time);
   }
 
   /**

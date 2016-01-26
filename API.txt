@@ -68,7 +68,7 @@ https://www.drupal.org/node/2508415
     Instantiating a CheckResult:
 
     CheckResult defines one constructor:
-    (Check $check, $result, array $findings, $time = NULL)
+    (Check $check, $result, array $findings, $visible = TRUE, $time = NULL)
       * $check
         The Check that is responsible for the result
       * $result
@@ -77,9 +77,10 @@ https://www.drupal.org/node/2508415
           * CheckResult::FAIL     - for a failed check
           * CheckResult::WARN     - for a check that only raised a warning
           * CheckResult::INFO     - general result for providing information
-          * CheckResult::HIDE     - for a check result that should not be shown
       * $findings
         An array of findings that can be evaluated. It can be empty.
+      * $visible
+        Check results can be hidden from the user by setting $visible to FALSE.
       * $time
         Timestamp indicating the time when the result was produced. If left null
         it will be the current time.

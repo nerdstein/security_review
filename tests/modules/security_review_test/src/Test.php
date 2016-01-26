@@ -38,7 +38,7 @@ class Test extends Check {
       $findings[] = rand(0, 1) ? rand(0, 10) : 'string';
     }
 
-    return $this->createResult(CheckResult::HIDE, $findings);
+    return $this->createResult(CheckResult::INFO, $findings);
   }
 
   /**

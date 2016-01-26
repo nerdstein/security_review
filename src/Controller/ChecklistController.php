@@ -129,7 +129,7 @@ class ChecklistController extends ControllerBase {
       // Get last result.
       $last_result = $check->lastResult();
       if ($last_result != NULL) {
-        if ($last_result->result() == CheckResult::HIDE) {
+        if (!$last_result->isVisible()) {
           continue;
         }
         $check_info['result'] = $last_result->result();
