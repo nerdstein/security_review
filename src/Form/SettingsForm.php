@@ -14,6 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\security_review\Checklist;
 use Drupal\security_review\Security;
+use Drupal\security_review\SecurityCheckPluginManager;
 use Drupal\security_review\SecurityReview;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -44,6 +45,13 @@ class SettingsForm extends ConfigFormBase {
   protected $securityReview;
 
   /**
+   * The security checks plugin manager.
+   *
+   * @var \Drupal\security_review\SecurityCheckPluginManager
+   */
+  protected $checkPluginManager;
+
+  /**
    * Constructs a SettingsForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -55,11 +63,12 @@ class SettingsForm extends ConfigFormBase {
    * @param \Drupal\security_review\SecurityReview $security_review
    *   The security_review service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Checklist $checklist, Security $security, SecurityReview $security_review) {
+  public function __construct(ConfigFactoryInterface $config_factory, Checklist $checklist, Security $security, SecurityReview $security_review, SecurityCheckPluginManager $checkPluginManager) {
     parent::__construct($config_factory);
     $this->checklist = $checklist;
     $this->security = $security;
     $this->securityReview = $security_review;
+    $this->checkPluginManager = $checkPluginManager;
   }
 
   /**
@@ -70,7 +79,8 @@ class SettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('security_review.checklist'),
       $container->get('security_review.security'),
-      $container->get('security_review')
+      $container->get('security_review'),
+      $container->get('plugin.manager.security_review.security_check')
     );
   }
 
@@ -85,6 +95,57 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Load security checks from plugin manager.
+    $checks = $this->checkPluginManager->getDefinitions();
+
+    $form['check_categories'] = [
+      '#type' => 'vertical_tabs',
+    ];
+
+    $categories = [];
+    foreach ($checks as $check) {
+      $instance = $this->checkPluginManager->createInstance($check['id']);
+      $category_found = array_search($instance->getNamespace(), $categories);
+      $category_count = count($category_count);
+      if ($category_found === FALSE) {
+        // Render the category as a tab.
+        $form['check_category_' . $category_count] = [
+          '#type' => 'details',
+          '#title' => $instance->getNamespace(),
+          '#group' => 'check_categories',
+        ];
+        $categories[] = $instance->getNamespace();
+      } else {
+        $category_count = $category_found;
+      }
+
+      dpm($category_count);
+
+      // Render the check within the tab.
+      $id = $check['id'];
+      $form['check_category_' . $category_count][$id] = [
+        '#type' => 'checkbox',
+        '#title' => $instance->getTitle(),
+      ];
+
+      $form['check_category_' . $category_count][$id . '_container'] = array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'class' => 'accommodation',
+        ),
+        '#states' => array(
+          'invisible' => array(
+            'input[name="' . $id . '"]' => array('checked' => FALSE),
+          ),
+        ),
+      );
+
+      // TODO - render settings inside of the container.
+    }
+
+    /**
+     * OLD STUFF
+     */
     // Get the list of checks.
     $checks = $this->checklist->getChecks();
 

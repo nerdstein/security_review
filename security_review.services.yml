@@ -10,3 +10,7 @@ services:
   security_review.security:
     class: Drupal\security_review\Security
     arguments: ['@security_review', '@module_handler', '@config.factory', '@kernel']
+
+  plugin.manager.security_review.security_check:
+      class: Drupal\security_review\SecurityCheckPluginManager
+      parent: default_plugin_manager
