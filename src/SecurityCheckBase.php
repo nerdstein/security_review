@@ -67,7 +67,7 @@ abstract class SecurityCheckBase extends PluginBase implements SecurityCheckInte
     // Get configuration.
     $config = $this->getConfiguration();
 
-    return $form;
+    return [];
   }
 
   /**

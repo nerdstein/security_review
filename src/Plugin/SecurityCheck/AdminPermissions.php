@@ -76,7 +76,12 @@ class AdminPermissions extends SecurityCheckBase {
 
     // TODO - Build the "permissions" in here, remove from service.
 
-    return $form;
+    return [
+      'test' => [
+        '#type' => 'value',
+        '#markup' => 'test 1, 2, wuttt!'
+      ]
+    ];
   }
 
   /**

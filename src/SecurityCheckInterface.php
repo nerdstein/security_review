@@ -7,15 +7,13 @@ namespace Drupal\security_review;
 
 use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 interface SecurityCheckInterface extends PluginInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
 
   /**
    * Executes the check and returns the results.
-   *
-   * @return SecurityCheckResult
-   *   The messaging format for returning a security review result.
    */
   public function run();
 
@@ -66,5 +64,37 @@ interface SecurityCheckInterface extends PluginInspectionInterface, Configurable
    * @return string
    */
   public function getDetailsAsPlainText();
+
+  /**
+   * Sets the default configuration.
+   */
+  public function defaultConfiguration();
+
+  /**
+   * Returns the configuration form.
+   * @return array
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state);
+
+  /**
+   * Updates the form state after validating the configuration form.
+   */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state);
+
+  /**
+   * Handles the processing of the config form.
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state);
+
+  /**
+   * Returns the configuration of the check.
+   * @return array
+   */
+  public function getConfiguration();
+
+  /**
+   * Updates the configuration object.
+   */
+  public function setConfiguration(array $configuration);
 
 }

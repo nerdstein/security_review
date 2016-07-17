@@ -103,10 +103,13 @@ class SettingsForm extends ConfigFormBase {
     ];
 
     $categories = [];
+    $check_count = 0;
     foreach ($checks as $check) {
-      $instance = $this->checkPluginManager->createInstance($check['id']);
+      $check_count++;
+      /** @var $instance \Drupal\security_review\SecurityCheckInterface */
+      $instance = $this->checkPluginManager->createInstance($check['id'], []);
       $category_found = array_search($instance->getNamespace(), $categories);
-      $category_count = count($category_count);
+      $category_count = count($categories);
       if ($category_found === FALSE) {
         // Render the category as a tab.
         $form['check_category_' . $category_count] = [
@@ -119,25 +122,35 @@ class SettingsForm extends ConfigFormBase {
         $category_count = $category_found;
       }
 
-      dpm($category_count);
-
       // Render the check within the tab.
       $id = $check['id'];
-      $form['check_category_' . $category_count][$id] = [
+      $form['check_category_' . $category_count][$id]['enabled'] = [
         '#type' => 'checkbox',
         '#title' => $instance->getTitle(),
       ];
 
-      $form['check_category_' . $category_count][$id . '_container'] = array(
+      $form['check_category_' . $category_count][$id]['instance'] = [
+        '#type' => 'value',
+        '#title' => $instance,
+      ];
+
+      $id_value = 'edit-enabled';
+
+      if ($check_count > 1) {
+        $id_value .= '--' . $check_count;
+      }
+
+      $form['check_category_' . $category_count][$id]['container'] = array(
         '#type' => 'container',
         '#attributes' => array(
           'class' => 'accommodation',
         ),
         '#states' => array(
           'invisible' => array(
-            'input[name="' . $id . '"]' => array('checked' => FALSE),
+            'input[id="' . $id_value . '"]' => array('checked' => FALSE),
           ),
         ),
+        'settings' => $instance->buildConfigurationForm($form, $form_state),
       );
 
       // TODO - render settings inside of the container.
@@ -146,6 +159,7 @@ class SettingsForm extends ConfigFormBase {
     /**
      * OLD STUFF
      */
+    /*
     // Get the list of checks.
     $checks = $this->checklist->getChecks();
 
@@ -253,6 +267,8 @@ class SettingsForm extends ConfigFormBase {
         ];
       }
     }
+
+    */
 
     // Return the finished form.
     return parent::buildForm($form, $form_state);

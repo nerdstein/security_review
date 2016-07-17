@@ -1,0 +1,7 @@
+# Setting storage for Base URL check.
+security_review.check.base_url_set:
+  type: security_review.check
+  mapping:
+    method:
+      type: string
+      label: 'Base URL identification method'
